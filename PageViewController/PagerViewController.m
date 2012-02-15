@@ -12,6 +12,7 @@
 @property (assign) BOOL pageControlUsed;
 @property (assign) NSUInteger page;
 @property (assign) BOOL rotating;
+- (void)loadScrollViewWithPage:(int)page;
 @end
 
 @implementation PagerViewController
