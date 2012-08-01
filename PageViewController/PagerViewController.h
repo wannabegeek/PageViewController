@@ -14,4 +14,7 @@
 
 - (IBAction)changePage:(id)sender;
 
+- (void)previousPage;
+- (void)nextPage;
+
 @end

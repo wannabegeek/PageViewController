@@ -49,10 +49,10 @@
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-
+	
 	UIViewController *viewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
 	[viewController willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-
+	
 	self.scrollView.contentSize = CGSizeMake(scrollView.frame.size.width * [self.childViewControllers count], scrollView.frame.size.height);
 	NSUInteger page = 0;
 	for (viewController in self.childViewControllers) {
@@ -67,7 +67,7 @@
     frame.origin.x = frame.size.width * _page;
     frame.origin.y = 0;
 	[self.scrollView scrollRectToVisible:frame animated:NO];
-
+	
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
@@ -78,35 +78,40 @@
 
 - (void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
-
+	
 	for (NSUInteger i =0; i < [self.childViewControllers count]; i++) {
 		[self loadScrollViewWithPage:i];
 	}
-
+	
 	self.pageControl.currentPage = 0;
 	_page = 0;
 	[self.pageControl setNumberOfPages:[self.childViewControllers count]];
-
+	
 	UIViewController *viewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
 	if (viewController.view.superview != nil) {
 		[viewController viewWillAppear:animated];
 	}
-
+	
 	self.scrollView.contentSize = CGSizeMake(scrollView.frame.size.width * [self.childViewControllers count], scrollView.frame.size.height);
 }
 
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
-	UIViewController *viewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
-	if (viewController.view.superview != nil) {
-		[viewController viewDidAppear:animated];
+	
+	if ([self.childViewControllers count]) {
+		UIViewController *viewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
+		if (viewController.view.superview != nil) {
+			[viewController viewDidAppear:animated];
+		}
 	}
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-	UIViewController *viewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
-	if (viewController.view.superview != nil) {
-		[viewController viewWillDisappear:animated];
+	if ([self.childViewControllers count]) {
+		UIViewController *viewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
+		if (viewController.view.superview != nil) {
+			[viewController viewWillDisappear:animated];
+		}
 	}
 	[super viewWillDisappear:animated];
 }
@@ -130,7 +135,7 @@
     if (controller == nil) {
 		return;
     }
-
+	
 	// add the controller's view to the scroll view
     if (controller.view.superview == nil) {
         CGRect frame = self.scrollView.frame;
@@ -139,6 +144,48 @@
         controller.view.frame = frame;
         [self.scrollView addSubview:controller.view];
     }
+}
+
+- (void)previousPage {
+	if (_page - 1 > 0) {
+	
+		// update the scroll view to the appropriate page
+		CGRect frame = self.scrollView.frame;
+		frame.origin.x = frame.size.width * (_page - 1);
+		frame.origin.y = 0;
+		
+		UIViewController *oldViewController = [self.childViewControllers objectAtIndex:_page];
+		UIViewController *newViewController = [self.childViewControllers objectAtIndex:_page - 1];
+		[oldViewController viewWillDisappear:YES];
+		[newViewController viewWillAppear:YES];
+		
+		[self.scrollView scrollRectToVisible:frame animated:YES];
+		
+		self.pageControl.currentPage = _page - 1;
+		// Set the boolean used when scrolls originate from the UIPageControl. See scrollViewDidScroll: above.
+		_pageControlUsed = YES;
+	}
+}
+
+- (void)nextPage {
+	if (_page + 1 > self.pageControl.numberOfPages) {
+		
+		// update the scroll view to the appropriate page
+		CGRect frame = self.scrollView.frame;
+		frame.origin.x = frame.size.width * (_page + 1);
+		frame.origin.y = 0;
+		
+		UIViewController *oldViewController = [self.childViewControllers objectAtIndex:_page];
+		UIViewController *newViewController = [self.childViewControllers objectAtIndex:_page + 1];
+		[oldViewController viewWillDisappear:YES];
+		[newViewController viewWillAppear:YES];
+		
+		[self.scrollView scrollRectToVisible:frame animated:YES];
+		
+		self.pageControl.currentPage = _page + 1;
+		// Set the boolean used when scrolls originate from the UIPageControl. See scrollViewDidScroll: above.
+		_pageControlUsed = YES;
+	}
 }
 
 - (IBAction)changePage:(id)sender {
@@ -153,9 +200,9 @@
 	UIViewController *newViewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
 	[oldViewController viewWillDisappear:YES];
 	[newViewController viewWillAppear:YES];
-
+	
 	[self.scrollView scrollRectToVisible:frame animated:YES];
-
+	
 	// Set the boolean used when scrolls originate from the UIPageControl. See scrollViewDidScroll: above.
     _pageControlUsed = YES;
 }
@@ -165,7 +212,7 @@
 	UIViewController *newViewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
 	[oldViewController viewDidDisappear:YES];
 	[newViewController viewDidAppear:YES];
-
+	
 	_page = self.pageControl.currentPage;
 }
 
