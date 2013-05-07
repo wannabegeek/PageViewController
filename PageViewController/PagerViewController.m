@@ -231,7 +231,7 @@
     // Switch the indicator when more than 50% of the previous/next page is visible
     CGFloat pageWidth = self.scrollView.frame.size.width;
     int page = floor((self.scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-	if (self.pageControl.currentPage != page) {
+	if (self.pageControl.currentPage != page && page >= 0 && page <= self.pageControl.numberOfPages - 1) {
 		UIViewController *oldViewController = [self.childViewControllers objectAtIndex:self.pageControl.currentPage];
 		UIViewController *newViewController = [self.childViewControllers objectAtIndex:page];
 		[oldViewController viewWillDisappear:YES];
